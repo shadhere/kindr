@@ -77,13 +77,36 @@ export const getUserController = async (req: Request, res: Response) => {
 };
 
 export const deleteUserController = async (req: Request, res: Response) => {
-  const userId = req.params.userId;
-
   try {
-    const user = await Users.findByIdAndDelete(userId).exec();
-    res.status(200).json({ msg: "user has been deleted!", deletedUser: user });
+    // Extract access token from cookies
+    const accessToken = req.cookies.accessToken;
+
+    if (!accessToken) {
+      return res.status(401).json({ error: "Access token not found" });
+    }
+
+    // Verify and decode access token
+    const decodedAccessToken = jwt.verify(accessToken, "64sanf329lc436gs") as {
+      id: string;
+    };
+
+    // Extract user ID from decoded access token
+    const userId = decodedAccessToken.id;
+    console.log("userId", userId);
+
+    // Check if the user is trying to delete their own account
+
+    // Delete user from the database
+    const deletedUser = await Users.findByIdAndDelete(userId).exec();
+    if (!deletedUser) {
+      return res.status(404).send("User not found");
+    }
+
+    // Send success response
+    res.status(200).json({ msg: "User has been deleted!", deletedUser });
   } catch (error) {
-    res.status(500).send("failed delete user!");
+    console.error("Error deleting user:", error);
+    res.status(500).send("Failed to delete user");
   }
 };
 

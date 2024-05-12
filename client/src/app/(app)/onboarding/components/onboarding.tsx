@@ -63,7 +63,7 @@ export function Onboarding({ isFormbricksCloud, session }: OnboardingProps) {
   const [formbricksResponseId, setFormbricksResponseId] = useState<
     string | undefined
   >();
-  const [currentStep, setCurrentStep] = useState<number | null>(null);
+  const [currentStep, setCurrentStep] = useState<number | null>(1);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeVisible, setIframeVisible] = useState(false);
   const [fade, setFade] = useState(false);
@@ -146,9 +146,12 @@ export function Onboarding({ isFormbricksCloud, session }: OnboardingProps) {
         }
       );
       console.log("Form data sent successfully:", response.data);
+      router.push("/settings");
       // Handle success response (e.g., show success message to the user)
     } catch (error) {
       console.error("Error sending form data:", error);
+      router.push("/settings");
+
       // Handle errors (e.g., show error message to the user)
     }
   };

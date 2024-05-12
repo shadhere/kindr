@@ -2,11 +2,12 @@
 
 import { GithubButton } from "@/app/(auth)/auth/components/GithubButton";
 import { GoogleButton } from "@/app/(auth)/auth/components/GoogleButton";
+import IsPasswordValid from "../../components/isPasswordValid";
 import { XCircleIcon } from "lucide-react";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 import { Button } from "@/app/ui/Button";
 import { PasswordInput } from "@/app/ui/PasswordInput";
@@ -21,9 +22,6 @@ interface SignupFormProps {
   emailAuthEnabled: boolean;
   googleOAuthEnabled: boolean;
   githubOAuthEnabled: boolean;
-  azureOAuthEnabled: boolean;
-  oidcOAuthEnabled: boolean;
-  oidcDisplayName?: string;
 }
 
 export const SignupForm = ({
@@ -43,15 +41,6 @@ export const SignupForm = ({
   const nameRef = useRef<HTMLInputElement>(null);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
 
-  const inviteToken = searchParams?.get("inviteToken");
-  const callbackUrl = useMemo(() => {
-    if (inviteToken) {
-      return webAppUrl + "/invite?token=" + inviteToken;
-    } else {
-      return webAppUrl;
-    }
-  }, [inviteToken, webAppUrl]);
-
   const [showLogin, setShowLogin] = useState(false);
   const [isButtonEnabled, setButtonEnabled] = useState(true);
   const formRef = useRef<HTMLFormElement>(null);
@@ -66,6 +55,9 @@ export const SignupForm = ({
     const password = formData.get("password") as string;
 
     try {
+      if (!isValid) {
+        return;
+      }
       setSigningUp(true);
       console.log("Signup form submitted:", { name, email, password });
       const response = await axios.post("http://localhost:5000/auth/register", {
@@ -77,12 +69,9 @@ export const SignupForm = ({
       console.log("Signup successful:", response.data);
 
       // Set authentication cookies if registration is successful
-      const { accessToken, refreshToken } = response.data;
-      document.cookie = `accessToken=${accessToken}; path=/;`;
-      document.cookie = `refreshToken=${refreshToken}; path=/;`;
 
       // Redirect to dashboard or any other route after successful registration
-      router.push("/dashboard");
+      router.push("/auth/login");
     } catch (error) {
       console.error("Signup error:", error);
       setError("An error occurred during signup. Please try again.");
@@ -121,7 +110,7 @@ export const SignupForm = ({
         </div>
       )}
       <div className="text-center">
-        <h1 className="mb-4 text-slate-700">Create your Formbricks account</h1>
+        <h1 className="mb-4 text-slate-700">Create your Kindr account</h1>
         <div className="space-y-2">
           {emailAuthEnabled && (
             <form
@@ -192,6 +181,10 @@ export const SignupForm = ({
                       </Link>
                     </div>
                   )}
+                  <IsPasswordValid
+                    password={password}
+                    setIsValid={setIsValid}
+                  />
                 </div>
               )}
               <Button
@@ -209,11 +202,6 @@ export const SignupForm = ({
                 variant="darkCTA"
                 className="w-full justify-center"
                 loading={signingUp}
-                // disabled={
-                //   formRef.current
-                //     ? !isButtonEnabled || !isValid
-                //     : !isButtonEnabled
-                // }
               >
                 Continue with Email
               </Button>
@@ -221,12 +209,6 @@ export const SignupForm = ({
           )}
 
           <GoogleButton />
-
-          {githubOAuthEnabled && (
-            <>
-              <GithubButton inviteUrl={callbackUrl} />
-            </>
-          )}
         </div>
 
         {(termsUrl || privacyUrl) && (
@@ -264,11 +246,7 @@ export const SignupForm = ({
           <span className="leading-5 text-slate-500">Have an account?</span>
           <br />
           <Link
-            href={
-              inviteToken
-                ? `/auth/login?callbackUrl=${callbackUrl}`
-                : "/auth/login"
-            }
+            href={"/auth/login"}
             className="font-semibold text-slate-600 underline hover:text-slate-700"
           >
             Log in.

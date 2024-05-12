@@ -33,7 +33,6 @@ export default function SignInPage() {
             passwordResetEnabled={!PASSWORD_RESET_DISABLED}
             googleOAuthEnabled={GOOGLE_OAUTH_ENABLED}
             githubOAuthEnabled={GITHUB_OAUTH_ENABLED}
-            azureOAuthEnabled={AZURE_OAUTH_ENABLED}
             oidcOAuthEnabled={OIDC_OAUTH_ENABLED}
             oidcDisplayName={OIDC_DISPLAY_NAME}
           />

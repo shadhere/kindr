@@ -43,6 +43,7 @@ export default function PillarSelect({
           size="lg"
           title="Animal"
           description="Help animals in need."
+          selected={selectedPillar === "Animals"} // Check if the current pathway is selected
           onSelect={() => {
             handleSelect("Animals");
           }}
@@ -54,6 +55,7 @@ export default function PillarSelect({
           cssId="onboarding-investor-survey-card"
           size="lg"
           title="People"
+          selected={selectedPillar === "People"} // Check if the current pathway is selected
           description="Help people in need."
           onSelect={() => {
             handleSelect("People");
@@ -65,6 +67,7 @@ export default function PillarSelect({
           cssId="onboarding-individual-survey-card"
           size="lg"
           title="Environment"
+          selected={selectedPillar === "Environment"} // Check if the current pathway is selected
           description="Help Environment in need."
           onSelect={() => {
             handleSelect("Environment");

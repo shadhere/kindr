@@ -60,9 +60,6 @@ export default function SignUpPage({
               emailAuthEnabled={EMAIL_AUTH_ENABLED}
               googleOAuthEnabled={GOOGLE_OAUTH_ENABLED}
               githubOAuthEnabled={GITHUB_OAUTH_ENABLED}
-              azureOAuthEnabled={AZURE_OAUTH_ENABLED}
-              oidcOAuthEnabled={OIDC_OAUTH_ENABLED}
-              oidcDisplayName={OIDC_DISPLAY_NAME}
             />
           )}
         </FormWrapper>

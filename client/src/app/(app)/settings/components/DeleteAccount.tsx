@@ -21,19 +21,12 @@ export function EditAvatar({}) {
 interface DeleteAccountModalProps {
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;
-  session: Session;
-  IS_FORMBRICKS_CLOUD: boolean;
 }
 
-function DeleteAccountModal({
-  setOpen,
-  open,
-  session,
-  IS_FORMBRICKS_CLOUD,
-}: DeleteAccountModalProps) {
+function DeleteAccountModal({ setOpen, open }: DeleteAccountModalProps) {
   const [deleting, setDeleting] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: any) => {
     setInputValue(e.target.value);
   };
 
@@ -68,27 +61,12 @@ function DeleteAccountModal({
   );
 }
 
-export function DeleteAccount({
-  session,
-  IS_FORMBRICKS_CLOUD,
-}: {
-  session: Session | null;
-  IS_FORMBRICKS_CLOUD: boolean;
-}) {
+export function DeleteAccount({}) {
   const [isModalOpen, setModalOpen] = useState(false);
-
-  if (!session) {
-    return null;
-  }
 
   return (
     <div>
-      <DeleteAccountModal
-        open={isModalOpen}
-        setOpen={setModalOpen}
-        session={session}
-        IS_FORMBRICKS_CLOUD={IS_FORMBRICKS_CLOUD}
-      />
+      <DeleteAccountModal open={isModalOpen} setOpen={setModalOpen} />
       <p className="text-sm text-slate-700">
         Delete your account with all personal data.{" "}
         <strong>This cannot be undone!</strong>

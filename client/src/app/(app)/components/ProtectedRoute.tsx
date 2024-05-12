@@ -32,9 +32,10 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     const checkAuthentication = () => {
       // Check if a cookie named 'session_token' exists
       const sessionToken = getCookie("accessToken");
+      const token = localStorage.getItem("onboardingCurrentStep");
 
       // Check if the session token is valid
-      const isAuthenticated = isValidSessionToken(sessionToken);
+      const isAuthenticated = isValidSessionToken(sessionToken) || !!token;
 
       return isAuthenticated;
     };

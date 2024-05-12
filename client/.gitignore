@@ -9,6 +9,9 @@
 # testing
 /coverage
 
+/src/lib/constants.ts
+/src/lib/env.ts
+
 # next.js
 /.next/
 /out/

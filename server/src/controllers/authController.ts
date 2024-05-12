@@ -9,6 +9,10 @@ import { validateRegister, validateLogin } from "../helpers/validation";
 import generateTokens from "../helpers/generateTokens";
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import sgMail from "@sendgrid/mail"; // Import SendGrid
+sgMail.setApiKey(
+  "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"
+);
 
 // Google OAuth 2.0 configuration
 // import bcrypt, jwt, etc...
@@ -40,9 +44,20 @@ passport.use(
             name: profile.displayName,
             email: profile.emails[0].value,
             group: group, // Include the group information
+            isVerified: true,
           });
           await user.save();
         }
+
+        // Generate access and refresh tokens
+        const { accessToken, refreshToken } = await generateTokens(user);
+
+        // Set tokens as cookies or send them in the response
+        if (req.res) {
+          req.res.cookie("accessToken", accessToken, { httpOnly: true });
+          req.res.cookie("refreshToken", refreshToken, { httpOnly: true });
+        }
+
         return cb(null, user);
       } catch (err: any) {
         return cb(err);
@@ -82,24 +97,82 @@ export const registerController = async (req: Request, res: Response) => {
   try {
     // hashed password
     const hashedPassword = await bcrypt.hash(password, 10);
-    const savedUser = new Users({ name, email, password: hashedPassword });
+    const savedUser = new Users({
+      name,
+      email,
+      password: hashedPassword,
+      isVerified: false,
+    });
     await savedUser.save();
 
-    const { accessToken, refreshToken } = await generateTokens(savedUser);
+    const verificationToken = jwt.sign({ email }, "64sanf329lc436gs", {
+      expiresIn: "1d",
+    });
 
-    // Set tokens as cookies
-    res.cookie("accessToken", accessToken, { httpOnly: true });
-    res.cookie("refreshToken", refreshToken, { httpOnly: true });
+    // Construct the verification link
+    const verificationLink = `http://localhost:5000/auth/verify-email/${verificationToken}`;
+
+    // Construct the email message
+    const msg = {
+      to: email, // Receiver address
+      from: "arshadbhai42012@gmail.com", // Sender address (this should be a verified sender in your SendGrid account)
+      subject: "Verify your email", // Subject line
+      text: `Please click on the following link to verify your email: ${verificationLink}`, // Plain text body
+      html: `<p>Please click on the following link to verify your email: <a href="${verificationLink}">${verificationLink}</a></p>`, // HTML body
+    };
+
+    // Send the email
+    await sgMail
+      .send(msg)
+      .then(() => {
+        console.log("Email sent");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    // const { accessToken, refreshToken } = await generateTokens(savedUser);
+
+    // // Set tokens as cookies
+    // res.cookie("accessToken", accessToken, { httpOnly: true });
+    // res.cookie("refreshToken", refreshToken, { httpOnly: true });
     res.status(201).json({
       message: "user created successfully!",
-      accessToken,
-      refreshToken,
+      // accessToken,
+      // refreshToken,
       user: { name, email },
     });
   } catch (err) {
     res
       .status(500)
       .json({ message: "an error occurred in creating user", error: err });
+  }
+};
+
+export const verifyEmailController = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+
+    // Verify token
+    const decoded = jwt.verify(token, "64sanf329lc436gs") as { email: string };
+    const userEmail = decoded.email;
+
+    console.log("token", token, "email", userEmail);
+
+    // Find user by email
+    const user = await Users.findOne({ email: userEmail });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Mark email as verified
+    user.isVerified = true;
+    await user.save();
+
+    res.redirect(`http://localhost:3000/auth/login`);
+  } catch (error) {
+    console.error("Error verifying email:", error);
+    res.status(400).json({ message: "Invalid or expired token" });
   }
 };
 
@@ -116,6 +189,12 @@ export const loginController = async (req: Request, res: Response) => {
   // check user exist
   const userExist = await Users.findOne({ email }).exec();
   if (!userExist) return res.status(404).send("user not found!");
+
+  if (!userExist.isVerified) {
+    return res
+      .status(401)
+      .send("Email not verified. Please verify your email address.");
+  }
 
   // check password
   const validPassword = await bcrypt.compare(password, userExist.password);
@@ -175,7 +254,23 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
       expiresIn: "10m",
     });
 
-    const link = `http://localhost:${process.env.PROJECT_PORT}/users/forgot-password/${token}`;
+    const link = `http://localhost:3000/auth/forgot-password/reset/${token}`;
+
+    const msg = {
+      to: email,
+      from: "arshadbhai42012@Gmail.com", // Change this to your verified sender
+      subject: "Reset Your Password",
+      html: `<p>You are receiving this email because you requested to reset your password. Please click the following link to reset your password:</p><p><a href="${link}">${link}</a></p>`,
+    };
+
+    await sgMail
+      .send(msg)
+      .then(() => {
+        console.log("Email sent");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
 
     res.status(201).json({
       resetPasswordLink: link,
@@ -187,18 +282,12 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
 };
 
 export const resetPasswordController = async (req: Request, res: Response) => {
-  const { pass, confirmPass } = req.body;
-
-  const token = req.params.token;
-  if (!token) return res.status(401).send("no token found!");
+  const { pass, confirmPass, token } = req.body;
 
   // verify token and check it
   let verifiedToken: JwtPayload;
   try {
-    verifiedToken = jwt.verify(
-      token,
-      process.env.SECRET_KEY || ""
-    ) as JwtPayload;
+    verifiedToken = jwt.verify(token, "64sanf329lc436gs") as JwtPayload;
   } catch (err) {
     return res.status(403).send("forbidden, doesn't have permission");
   }
@@ -217,6 +306,7 @@ export const resetPasswordController = async (req: Request, res: Response) => {
     const user = await Users.findById(verifiedToken.id); // Accessing _id directly from the decoded token payload
     if (!user) return res.status(404).send("the user not found!");
 
+    console.log("user", user);
     // hashed password
     const hashedPassword = await bcrypt.hash(pass, 10);
 
@@ -236,7 +326,7 @@ export const googleAuthController = passport.authenticate("google", {
 // Google Authentication Callback Controller
 export const googleAuthCallbackController = passport.authenticate("google", {
   failureRedirect: "/login",
-  successRedirect: "/",
+  successRedirect: "http://localhost:3000/onboarding",
 });
 
 export default {

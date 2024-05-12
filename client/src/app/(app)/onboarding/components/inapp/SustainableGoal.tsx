@@ -24,8 +24,6 @@ type SustainableGoalChoice = {
 };
 
 export const SustainableGoal: React.FC<SustainableGoalProps> = ({
-  setFormbricksResponseId,
-  session,
   setCurrentStep,
   setSustainableGoal,
   sustainableGoal,
@@ -74,27 +72,6 @@ export const SustainableGoal: React.FC<SustainableGoalProps> = ({
     { label: "Other (please specify)", id: "other" },
   ];
 
-  const next = () => {
-    setCurrentStep(3);
-    localStorage.setItem("onboardingCurrentStep", "3");
-  };
-
-  const handleNextClick = async () => {
-    if (sustainableGoal === "Other" && otherValue.trim() === "") {
-      return;
-    }
-    if (sustainableGoal) {
-      try {
-        setIsUpdating(true);
-        setIsUpdating(false);
-      } catch (e) {
-        setIsUpdating(false);
-        console.error(e);
-      }
-      if (env.NEXT_PUBLIC_FORMBRICKS_ONBOARDING_SURVEY_ID) next();
-    }
-  };
-
   return (
     <div className="flex w-full max-w-xl flex-col gap-8">
       <OnboardingTitle
@@ -131,11 +108,6 @@ export const SustainableGoal: React.FC<SustainableGoalProps> = ({
                   onChange={(e) => {
                     setSustainableGoal(e.currentTarget.value);
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleNextClick();
-                    }
-                  }}
                 />
                 <span
                   id={`${choice.id}-label`}
@@ -160,12 +132,7 @@ export const SustainableGoal: React.FC<SustainableGoalProps> = ({
         </div>
       </fieldset>
       <div className="flex justify-between">
-        <Button
-          className="text-slate-500"
-          variant="minimal"
-          onClick={next}
-          id="SustainableGoal-skip"
-        >
+        <Button className="text-slate-500" variant="minimal" href={"/settings"}>
           Skip
         </Button>
         <Button

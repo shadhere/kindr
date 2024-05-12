@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/router";
 import { Button } from "@/app/ui/Button";
 import { Input } from "@/app/ui/Input";
+import { send } from "process";
 
 type InvestorInterestProps = {
   setFormbricksResponseId: (id: string) => void;
@@ -25,28 +26,6 @@ const InvestorInterest: React.FC<InvestorInterestProps> = ({
   const [isUpdating, setIsUpdating] = useState(false);
   const fieldsetRef = useRef<HTMLFieldSetElement>(null);
 
-  const next = () => {
-    setCurrentStep(3);
-    localStorage.setItem("onboardingCurrentStep", "3");
-  };
-
-  const handleNextClick = async () => {
-    try {
-      setIsUpdating(true);
-      // Perform update logic here
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsUpdating(false);
-      next();
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    handleNextClick();
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
@@ -62,7 +41,7 @@ const InvestorInterest: React.FC<InvestorInterestProps> = ({
         title="Explore Your Interests"
         subtitle="Let's tailor your experience to match your preferences."
       />
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={sendDataToBackend} className="space-y-4">
         <div className="relative">
           <label
             htmlFor="investmentHorizon"
@@ -162,7 +141,7 @@ const InvestorInterest: React.FC<InvestorInterestProps> = ({
           <Button
             className="text-slate-500"
             variant="minimal"
-            onClick={next}
+            href={"/settings"}
             id="skipInvestorInterest"
           >
             Skip
@@ -172,7 +151,6 @@ const InvestorInterest: React.FC<InvestorInterestProps> = ({
             loading={isUpdating}
             type="submit"
             id="InvestorInterestNext"
-            onClick={sendDataToBackend}
           >
             Complete
           </Button>

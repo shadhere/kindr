@@ -9,13 +9,7 @@ export default async function OnboardingPage() {
 
   return (
     <ProtectedRoute>
-      <Onboarding
-      // isFormbricksCloud={IS_FORMBRICKS_CLOUD}
-      // session={session}
-      // environment={environment}
-      // user={user}
-      // team={team}
-      />
+      <Onboarding />
     </ProtectedRoute>
   );
 }

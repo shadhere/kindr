@@ -11,6 +11,7 @@ type UserInterestProps = {
   setCurrentStep: (currentStep: number) => void;
   setUserInterest: (userInterest: any) => void;
   userInterest: any;
+  sendDataToBackend: any;
 };
 
 const UserInterest: React.FC<UserInterestProps> = ({
@@ -19,6 +20,7 @@ const UserInterest: React.FC<UserInterestProps> = ({
   setCurrentStep,
   setUserInterest,
   userInterest,
+  sendDataToBackend,
 }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const fieldsetRef = useRef<HTMLFieldSetElement>(null);
@@ -156,6 +158,7 @@ const UserInterest: React.FC<UserInterestProps> = ({
           </Button>
           <Button
             variant="darkCTA"
+            onClick={sendDataToBackend}
             loading={isUpdating}
             disabled={
               !userInterest.localGlobalInterest ||
@@ -166,7 +169,7 @@ const UserInterest: React.FC<UserInterestProps> = ({
             type="submit"
             id="userInterestNext"
           >
-            Next
+            Complete
           </Button>
         </div>
       </form>

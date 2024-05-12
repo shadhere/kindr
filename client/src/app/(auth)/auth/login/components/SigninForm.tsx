@@ -2,8 +2,6 @@
 
 import { GithubButton } from "@/app/(auth)/auth/components/GithubButton";
 import { GoogleButton } from "@/app/(auth)/auth/components/GoogleButton";
-import TwoFactor from "@/app/(auth)/auth/login/components/TwoFactor";
-import TwoFactorBackup from "@/app/(auth)/auth/login/components/TwoFactorBackup";
 import { XCircleIcon } from "lucide-react";
 import axios from "axios";
 import Link from "next/dist/client/link";
@@ -40,9 +38,6 @@ export const SigninForm = ({
   passwordResetEnabled: boolean;
   googleOAuthEnabled: boolean;
   githubOAuthEnabled: boolean;
-  azureOAuthEnabled: boolean;
-  oidcOAuthEnabled: boolean;
-  oidcDisplayName?: string;
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -66,16 +61,18 @@ export const SigninForm = ({
 
         // Redirect to dashboard or any other route after successful login
         console.log("Login successful:", response.data);
-        router.push("/dashboard");
+        router.push("/onboarding");
       } else {
-        // Handle login failure
         setSignInError(
           response.data.message || "Login failed. Please try again."
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
-      setSignInError("An error occurred during login. Please try again.");
+      setSignInError(
+        error?.response?.data?.message ||
+          "An error occurred during login. Please try again."
+      );
     } finally {
       setLoggingIn(false);
     }
@@ -83,15 +80,9 @@ export const SigninForm = ({
   const [loggingIn, setLoggingIn] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [isPasswordFocused, setIsPasswordFocused] = useState(false);
-  const [totpLogin, setTotpLogin] = useState(false);
-  const [totpBackup, setTotpBackup] = useState(false);
   const [signInError, setSignInError] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   const error = searchParams?.get("error");
-  const callbackUrl = searchParams?.get("callbackUrl");
-  const inviteToken = callbackUrl
-    ? new URL(callbackUrl).searchParams.get("token")
-    : null;
 
   useEffect(() => {
     if (error) {
@@ -99,43 +90,17 @@ export const SigninForm = ({
     }
   }, [error]);
 
-  const formLabel = useMemo(() => {
-    if (totpBackup) {
-      return "Enter your backup code";
-    }
-
-    if (totpLogin) {
-      return "Enter your two-factor authentication code";
-    }
-
-    return "Login to your account";
-  }, [totpBackup, totpLogin]);
-
-  const TwoFactorComponent = useMemo(() => {
-    if (totpBackup) {
-      return <TwoFactorBackup />;
-    }
-
-    if (totpLogin) {
-      return <TwoFactor />;
-    }
-
-    return null;
-  }, [totpBackup, totpLogin]);
-
   return (
     <FormProvider {...formMethods}>
       <div className="text-center">
-        <h1 className="mb-4 text-slate-700">{formLabel}</h1>
+        <h1 className="mb-4 text-slate-700">Login to your account</h1>
         <div className="space-y-2">
           <form
             onSubmit={formMethods.handleSubmit(onSubmit)}
             className="space-y-2"
           >
-            {TwoFactorComponent}
-
             {showLogin && (
-              <div className={cn(totpLogin && "hidden")}>
+              <div>
                 <div className="mb-2 transition-all duration-500 ease-in-out">
                   <label htmlFor="email" className="sr-only">
                     Email address
@@ -147,7 +112,7 @@ export const SigninForm = ({
                     required
                     placeholder="work@email.com"
                     defaultValue={searchParams?.get("email") || ""}
-                    className="focus:border-brand focus:ring-brand block w-full rounded-md border-slate-300 shadow-sm sm:text-sm"
+                    className="focus:border-brand focus-brand block w-full rounded-md border-slate-300 shadow-sm sm:text-sm"
                     {...formMethods.register("email", {
                       required: true,
                       pattern: /\S+@\S+\.\S+/,
@@ -205,34 +170,20 @@ export const SigninForm = ({
                 className="w-full justify-center"
                 loading={loggingIn}
               >
-                {totpLogin ? "Submit" : "Login with Email"}
+                {"Login with Email"}
               </Button>
             )}
           </form>
 
-          {googleOAuthEnabled && !totpLogin && (
-            <>
-              <GoogleButton inviteUrl={callbackUrl} />
-            </>
-          )}
-
-          {githubOAuthEnabled && !totpLogin && (
-            <>
-              <GithubButton inviteUrl={callbackUrl} />
-            </>
-          )}
+          <GoogleButton />
         </div>
 
-        {publicSignUpEnabled && !totpLogin && (
+        {publicSignUpEnabled && (
           <div className="mt-9 text-center text-xs ">
-            <span className="leading-5 text-slate-500">New to Formbricks?</span>
+            <span className="leading-5 text-slate-500">New to Kindr?</span>
             <br />
             <Link
-              href={
-                inviteToken
-                  ? `/auth/signup?inviteToken=${inviteToken}`
-                  : "/auth/signup"
-              }
+              href={"/auth/signup"}
               className="font-semibold text-slate-600 underline hover:text-slate-700"
             >
               Create an account
@@ -240,48 +191,6 @@ export const SigninForm = ({
           </div>
         )}
       </div>
-
-      {totpLogin && !totpBackup && (
-        <div className="mt-9 text-center text-xs">
-          <span className="leading-5 text-slate-500">Lost Access?</span>
-          <br />
-          <div className="flex flex-col">
-            <button
-              type="button"
-              className="font-semibold text-slate-600 underline hover:text-slate-700"
-              onClick={() => {
-                setTotpBackup(true);
-              }}
-            >
-              Use a backup code
-            </button>
-
-            <button
-              type="button"
-              className="mt-4 font-semibold text-slate-600 underline hover:text-slate-700"
-              onClick={() => {
-                setTotpLogin(false);
-              }}
-            >
-              Go Back
-            </button>
-          </div>
-        </div>
-      )}
-
-      {totpBackup && (
-        <div className="mt-9 text-center text-xs">
-          <button
-            type="button"
-            className="font-semibold text-slate-600 underline hover:text-slate-700"
-            onClick={() => {
-              setTotpBackup(false);
-            }}
-          >
-            Go Back
-          </button>
-        </div>
-      )}
 
       {signInError && (
         <div className="absolute top-10 rounded-md bg-red-50 p-4">

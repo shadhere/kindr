@@ -6,26 +6,13 @@ import { useState } from "react";
 
 export const GoogleButton = ({
   text = "Continue with Google",
-  inviteUrl,
 }: {
   text?: string;
   inviteUrl?: string | null;
 }) => {
-  const [group, setGroup] = useState("");
-
-  const handleInputChange = (e: any) => {
-    setGroup(e.target.value);
-  };
-
   return (
     <div>
-      <input
-        type="text"
-        placeholder="Enter your group"
-        value={group}
-        onChange={handleInputChange}
-      />
-      <Link href={`http://localhost:5000/auth/google?group=${group}`}>
+      <Link href={`http://localhost:5000/auth/google`}>
         {" "}
         {/* Include the group information as a query parameter */}
         <Button

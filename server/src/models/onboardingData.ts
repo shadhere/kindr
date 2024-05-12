@@ -2,17 +2,17 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 import User, { IUser } from "./users"; // Assuming the user model is named User and the interface is IUser
 
 export interface IOnboardingData extends Document {
-  investmentHorizon: string;
-  riskTolerance: string;
-  preferredSectors: string;
-  desiredReturns: string;
+  investmentHorizon: string | null;
+  riskTolerance: string | null;
+  preferredSectors: string | null;
+  desiredReturns: string | null;
   investmentExperience: string;
-  impactMetrics: string;
-  localGlobalInterest: string;
-  contentTypes: string;
-  supportedCauses: string;
-  pillarIssues: string;
-  subscribeNewsletter: boolean;
+  impactMetrics: string | null;
+  localGlobalInterest: string | null;
+  contentTypes: string | null;
+  supportedCauses: string | null;
+  pillarIssues: string | null;
+  subscribeNewsletter: boolean | null;
   selectedPathway: string | null;
   selectedPillar: string | null;
   selectedChoice: string;

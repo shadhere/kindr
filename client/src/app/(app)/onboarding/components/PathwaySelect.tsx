@@ -78,6 +78,7 @@ export default function PathwaySelect({
           cssId="onboarding-impact-survey-card"
           size="lg"
           title="Impact Organisation"
+          selected={selectedPathway === "impact_organisation"} // Check if the current pathway is selected
           description="Start as an Impact Organisation."
           onSelect={() => {
             handleSelect("impact_organisation");
@@ -89,6 +90,7 @@ export default function PathwaySelect({
           cssId="onboarding-individual-survey-card"
           size="lg"
           title="Individual"
+          selected={selectedPathway === "individual"} // Check if the current pathway is selected
           description="Start as an Individual."
           onSelect={() => {
             handleSelect("individual");
@@ -100,6 +102,7 @@ export default function PathwaySelect({
           cssId="onboarding-investor-survey-card"
           size="lg"
           title="Investor"
+          selected={selectedPathway === "investor"} // Check if the current pathway is selected
           description="Start as an Investor."
           onSelect={() => {
             handleSelect("investor");

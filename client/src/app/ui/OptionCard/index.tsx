@@ -7,6 +7,7 @@ interface PathwayOptionProps {
   title: string;
   description: string;
   loading?: boolean;
+  selected?: boolean;
   onSelect: () => void;
   cssId?: string;
   children?: React.ReactNode;
@@ -24,13 +25,16 @@ export const OptionCard: React.FC<PathwayOptionProps> = ({
   description,
   children,
   onSelect,
+  selected,
   loading,
   cssId,
 }) => (
   <div className="relative">
     <div
       id={cssId}
-      className={`flex cursor-pointer flex-col items-center justify-center bg-white p-4 focus:bg-slate-100 focus:border-slate-300 hover:scale-105 hover:border-slate-300 ${sizeClasses[size]}`}
+      className={`flex cursor-pointer flex-col items-center justify-center bg-white p-4  hover:scale-105 hover:border-slate-300 ${
+        sizeClasses[size]
+      } ${selected ? "border-brand" : ""}`}
       onClick={onSelect}
       role="button"
       tabIndex={0}
